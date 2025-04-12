@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 
+
 def login_to_threads(username: str, password: str) -> dict[str, str]:
     """
     使用 Selenium 模擬登入 Threads，並取得必要的 cookies

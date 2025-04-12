@@ -3,6 +3,7 @@ import getpass
 from api.login import login_to_threads
 from api.post import post_to_threads
 
+
 def main(caption: str = "感謝 AI 讚嘆 AI"):
     # 輸入使用者名稱和密碼
     username = input("\n請輸入 Threads/Instagram 使用者名稱: ")
