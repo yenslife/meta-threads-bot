@@ -1,7 +1,7 @@
 import getpass
 
-from api.login import login_to_threads
-from api.post import post_to_threads
+from meta_threads_bot.api.login import login_to_threads
+from meta_threads_bot.api.post import post_to_threads
 
 
 def main(caption: str = "感謝 AI 讚嘆 AI"):
@@ -30,6 +30,7 @@ def main(caption: str = "感謝 AI 讚嘆 AI"):
         print("\n發布貼文結果:")
         print(f"狀態碼: {response.status_code}")
         print(f"回應內容: {response.text}")
+        print(f"status of response: {response.json()['status']}")
     else:
         print("\n無法取得必要的 cookies，請檢查登入過程")
 

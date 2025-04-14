@@ -1,14 +1,15 @@
 import time
 import requests
+from typing import Optional
 
 
 def post_to_threads(
-    caption="Hello World",
-    upload_id=None,
-    csrf_token=None,
-    session_id=None,
-    ds_user_id=None,
-):
+    caption: str = "Hello World",
+    upload_id: Optional[str] = None,
+    csrf_token: Optional[str] = None,
+    session_id: Optional[str] = None,
+    ds_user_id: Optional[str] = None,
+) -> requests.Response:
     """
     發布文字貼文到 Threads
 
@@ -44,11 +45,13 @@ def post_to_threads(
     }
 
     # 建立必要的 cookies
-    cookies = {
-        "csrftoken": csrf_token,
-        "ds_user_id": ds_user_id,
-        "sessionid": session_id,
-    }
+    cookies = {}
+    if csrf_token:
+        cookies["csrftoken"] = csrf_token
+    if ds_user_id:
+        cookies["ds_user_id"] = ds_user_id
+    if session_id:
+        cookies["sessionid"] = session_id
 
     # 發送 POST 請求
     response = requests.post(URL, headers=headers, cookies=cookies, data=data)

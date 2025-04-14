@@ -1,9 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 import time
+from typing import Optional
 
 
-def login_to_threads(username: str, password: str) -> dict[str, str]:
+def login_to_threads(username: str, password: str) -> Optional[dict[str, str]]:
     """
     使用 Selenium 模擬登入 Threads，並取得必要的 cookies
 
@@ -85,7 +88,15 @@ def login_to_threads(username: str, password: str) -> dict[str, str]:
 
         # 等待登入成功並跳轉
         print("⏳ 等待登入處理中...")
-        time.sleep(10)
+        try:
+            # 等待 URL 變更，不再包含 "login"
+            WebDriverWait(driver, 20).until(
+                lambda d: "threads.net" in d.current_url
+                and "login" not in d.current_url
+            )
+            print("✅ 登入成功!")
+        except TimeoutException:
+            print("❌ 登入等待逾時，可能登入失敗")
 
         # 檢查是否登入成功 (可能會跳轉到主頁或其他頁面)
         current_url = driver.current_url
@@ -99,7 +110,7 @@ def login_to_threads(username: str, password: str) -> dict[str, str]:
             cookie_dict = {cookie["name"]: cookie["value"] for cookie in cookies}
 
             # 提取需要的 cookies
-            result = {}
+            result = {"message": "ok"}
             if "csrftoken" in cookie_dict:
                 result["csrftoken"] = cookie_dict["csrftoken"]
             if "sessionid" in cookie_dict:
@@ -111,11 +122,11 @@ def login_to_threads(username: str, password: str) -> dict[str, str]:
             return result
         else:
             print("❌ 登入失敗，請檢查使用者名稱和密碼")
-            return None
+            return {"message": "Login failed"}
 
     except Exception as e:
         print(f"❌ 發生錯誤: {str(e)}")
-        return None
+        return {"message": str(e)}
     finally:
         # 關閉瀏覽器
         driver.quit()
