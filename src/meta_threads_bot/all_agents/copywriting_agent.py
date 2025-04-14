@@ -13,7 +13,6 @@ def copywriting(
     caption: str,
 ) -> str:
     """Copywriting"""
-    context.context.caption = caption
     return caption
 
 
