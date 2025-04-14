@@ -1,3 +1,5 @@
+import os
+
 from agents import Agent, function_tool, RunContextWrapper
 from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 from dotenv import load_dotenv
@@ -82,10 +84,10 @@ async def login_to_threads(
 
     # 檢查 cookies 是否為 None
     if cookies is None:
-        return {"message": "登入失敗，請提供正確的帳號密碼再試一次"}
+        return {"message": "登入失敗，請提供正確的帳號密碼或者換網路再試一次"}
 
     if cookies.get("message") != "ok":
-        return {"message": "登入失敗，請提供正確的帳號密碼再試一次"}
+        return {"message": "登入失敗，請提供正確的帳號密碼或者換網路再試一次"}
 
     # 安全地取得 cookies 值
     csrf_token = cookies.get("csrftoken")
@@ -103,10 +105,24 @@ async def login_to_threads(
     return {"message": "成功登入，已取得 cookies 資訊，並儲存到 context 中"}
 
 
+@function_tool(description_override="檢查環境變數是否提供登入帳號密碼")
+async def check_login() -> dict[str, str | None]:
+    if not os.getenv("THREADS_USERNAME") or not os.getenv("THREADS_PASSWORD"):
+        return {"message": "請先登入 Threads"}
+    return {
+        "message": "已經登入 Threads",
+        "username": os.getenv("THREADS_USERNAME"),
+        "password": os.getenv("THREADS_PASSWORD"),
+    }
+
+
 agent = Agent[PostContent](
     name="Posting Agent",
-    instructions=f"{RECOMMENDED_PROMPT_PREFIX}\n\n將使用者提供的貼文內容用工具發文到 Threads，如果有需要登入，請使用者提供密碼",
+    instructions=f"""{RECOMMENDED_PROMPT_PREFIX}
+    將使用者提供的貼文內容用工具發文到 Threads，如果有需要登入，請使用者提供密碼
+    請先檢查使用者是否提供帳號密碼在環境變數。""",
     model="gpt-4o-mini",
-    handoff_description="負責發文到 Threads 的 Agent",
-    tools=[post_to_threads, login_to_threads],
+    # handoff_description="負責登入並且發文到 Threads 的 Agent",
+    handoff_description="帳號相關操作的 Agent",
+    tools=[post_to_threads, login_to_threads, check_login],
 )
