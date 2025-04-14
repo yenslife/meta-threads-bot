@@ -1,10 +1,16 @@
 from agents import Agent
 from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
+from agents import function_tool
 
 from dotenv import load_dotenv
 from meta_threads_bot.Context.basic import PostContent
 
 load_dotenv()
+
+
+@function_tool(description_override="撰寫一篇文章")
+def copywriting(caption: str) -> str:
+    return caption
 
 
 # TODO: 網路搜尋 or 資料檢索
@@ -22,4 +28,5 @@ agent = Agent[PostContent](
     - 越吸引眼球越好""",
     model="gpt-4o-mini",
     handoff_description="負責撰寫貼文的 Agent",
+    tools=[copywriting],
 )
