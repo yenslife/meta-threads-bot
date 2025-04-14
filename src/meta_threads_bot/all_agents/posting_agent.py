@@ -110,7 +110,7 @@ async def check_login() -> dict[str, str | None]:
     if not os.getenv("THREADS_USERNAME") or not os.getenv("THREADS_PASSWORD"):
         return {"message": "請先登入 Threads"}
     return {
-        "message": "已經登入 Threads",
+        "message": "用戶有提供帳號密碼，請直接使用 login_to_threads 工具進行登入取得 cookies",
         "username": os.getenv("THREADS_USERNAME"),
         "password": os.getenv("THREADS_PASSWORD"),
     }
@@ -119,6 +119,7 @@ async def check_login() -> dict[str, str | None]:
 agent = Agent[PostContent](
     name="Posting Agent",
     instructions=f"""{RECOMMENDED_PROMPT_PREFIX}
+    你是 Posting Agent，負責登入並且發文到 Threads 的 Agent
     將使用者提供的貼文內容用工具發文到 Threads，如果有需要登入，請使用者提供密碼
     請先檢查使用者是否提供帳號密碼在環境變數。""",
     model="gpt-4o-mini",
