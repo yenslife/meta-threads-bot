@@ -20,6 +20,8 @@ def post_to_threads(
 ) -> dict[str, str | int]:
     """Post to Threads"""
 
+    print(f"post_to_threads caption: {caption}")
+
     if (
         not context.context.csrf_token
         or not context.context.session_id
@@ -42,11 +44,7 @@ def post_to_threads(
             return {
                 "message": "貼文已發文成功",
                 "status": status,
-                "response_text": (
-                    response.text[:100] + "..."
-                    if len(response.text) > 100
-                    else response.text
-                ),
+                "response_text": response.text,
             }
         else:
             return {
@@ -105,12 +103,12 @@ async def login_to_threads(
     return {"message": "成功登入，已取得 cookies 資訊，並儲存到 context 中"}
 
 
-@function_tool(description_override="檢查環境變數是否提供登入帳號密碼")
-async def check_login() -> dict[str, str | None]:
+@function_tool(description_override="從環境變數中取得登入帳號密碼")
+async def get_credential_from_env() -> dict[str, str | None]:
     if not os.getenv("THREADS_USERNAME") or not os.getenv("THREADS_PASSWORD"):
-        return {"message": "請先登入 Threads"}
+        return {"message": "環境變數沒有 username 和 password，請使用者提供"}
     return {
-        "message": "用戶有提供帳號密碼，請直接使用 login_to_threads 工具進行登入取得 cookies",
+        "message": "環境變數有提供 username 和 password，請直接使用 login_to_threads 工具進行登入取得 cookies",
         "username": os.getenv("THREADS_USERNAME"),
         "password": os.getenv("THREADS_PASSWORD"),
     }
@@ -121,9 +119,10 @@ agent = Agent[PostContent](
     instructions=f"""{RECOMMENDED_PROMPT_PREFIX}
     你是 Posting Agent，負責登入並且發文到 Threads 的 Agent
     將使用者提供的貼文內容用工具發文到 Threads，如果有需要登入，請使用者提供密碼
-    請先檢查使用者是否提供帳號密碼在環境變數。""",
-    model="gpt-4o-mini",
+    請先檢查使用者是否提供帳號密碼在環境變數。
+    - 請確認發文格式正確""",
+    model="gpt-4.1-mini",
     # handoff_description="負責登入並且發文到 Threads 的 Agent",
     handoff_description="帳號相關操作的 Agent",
-    tools=[post_to_threads, login_to_threads, check_login],
+    tools=[post_to_threads, login_to_threads, get_credential_from_env],
 )
